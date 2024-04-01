@@ -13,35 +13,42 @@ public:
     /**
      * @brief Virtual function to get the description of the card.
      */
-    virtual void getDescription() = 0;
+    virtual void getDescription() = 0; //////////////////////SHOULD RETURN STRING WITH THE DESCRIPTION I THINK, OR CHANGE NAME
 
     /**
      * @brief Virtual function to activate the card's effect on a player.
      * @param player The player on whom the card's effect is activated.
      */
     virtual void activate(Player& player) = 0;
+
+    virtual ~Card() = default;
 };
+
+
+/////////////////////ENCOUNTER//////////////////
+
+
 
 /**
  * @brief Base class for encounter cards.
  */
 class Encounter : public Card {
 protected:
-    int m_CombatPower;
-    int m_Loot;
-    int m_Damage;
+    int m_combatPower; ///////////CHANGED MEMBER NAMES TO FIT CONVENTIONS
+    int m_loot;
+    int m_damage;
 
 public:
     /**
      * @brief Operator to combine two Encounter objects.
      * @param obj The Encounter object to combine with.
      */
-    void operator+=(const Encounter& obj);
+    void operator+=(const Encounter& object); /////CHANGED OBJ TO OBJECT
 
     /**
      * @brief Reset the Encounter object's attributes.
      */
-    void reset();
+    void reset(); /////////WHY DO YOU NEED THIS?
 
     /**
      * @brief Activate the Encounter card's effect on a player.
@@ -63,6 +70,8 @@ public:
      * @brief Getter for the damage of an Encounter object.
     */
     int getDamage() const;
+
+    virtual ~Encounter() = default;
 };
 
 /**
@@ -70,25 +79,29 @@ public:
  */
 class Monster : public Encounter {
 protected:
-    std::string m_Name;
+    std::string m_name;
 
 public:
     /**
      * @brief Get the description of the Monster card.
      */
     void getDescription() override;
+
+    virtual ~Monster() = default;
 };
+
 
 /**
  * @brief Class representing a Dragon monster encounter.
- */
+*/
 class Dragon : public Monster {
 public:
-    /**
-     * @brief Constructor to initialize a Dragon card.
-     */
-    Dragon();
+        /**
+         * @brief Constructor to initialize a Dragon card.
+         */
+        Dragon();   
 };
+
 
 /**
  * @brief Class representing a Giant monster encounter.
@@ -127,11 +140,11 @@ public:
     Gang(int size);
 
     /**
-     * @brief Constructor to initialize a Gang card with a specified size and encounter.
+     * @brief Constructor to initialize a Gang card with a specified size and an encounter type object.
      * @param size The size of the gang.
      * @param encounter The encounter to include in the gang.
      */
-    Gang(int size, const Monster& monster);
+    Gang(int size, const Encounter& monster); //////////////CHANGED
 
     /**
      * @brief Get the description of the Gang card.
@@ -139,18 +152,25 @@ public:
     void getDescription() override;
 };
 
+
+
+////////////////////////////EVENT/////////////////////////////
+
+
 /**
  * @brief Base class for event cards.
  */
 class Event : public Card {
 protected:
-    std::string m_Name;
+    std::string m_name;
 
 public:
     /**
      * @brief Get the description of the Event card.
      */
     void getDescription() override;
+
+    virtual ~Event() = default;
 };
 
 /**

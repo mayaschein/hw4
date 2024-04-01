@@ -1,7 +1,58 @@
 #include "Mtmchkin.h"
+#include <algorithm> 
+#include <memory>
 
 // Constructor implementation
-Mtmchkin::Mtmchkin(const std::string& cards, const std::string& playersReceived)
+
+void Mtmchkin::handleGangs(std::ifstream& cardsFile)
+{
+    std::string word;
+    cardsFile >> word;
+
+    int gangSize;
+    gangSize = std::stoi(word); 
+    if (gangSize<0) //checking proper input of the gang size
+        {
+            throw std::runtime_error("Invalid Cards File");
+        }
+
+    int tempGangSize = gangSize; ////////////////////WHY DO YOU NEED IT?
+    Monster tempGang;
+    while (gangSize > 0) { //reading all members of the gang
+        cardsFile >> word;
+
+        if (word == "Gang") {
+            handleGangs(cardsFile); // Recursive call for nested gangs
+        } //builds the gang:
+        if (word == "Dragon")
+            {
+                Dragon dragon;
+                tempGang+=dragon;
+            }
+        else if (word == "Giant")
+            {
+                Giant giant;
+                tempGang+=giant;
+            }
+        else if (word == "Goblin")
+            {
+                Goblin goblin;
+                tempGang+=goblin;
+            }
+        else
+            {
+                throw std::runtime_error("Invalid Cards File");
+            }
+
+        gangSize--;
+    }
+
+    unique_ptr<Card> gang( new Gang(tempGangSize, tempGang) );
+
+    deck.push(gang); ////////CHANGED BECAUSE MAKE UNIQUE ONLY EXISTS FROM C++14 ONWARDS.
+}
+
+ Mtmchkin::Mtmchkin(const std::string& cards, const std::string& playersReceived)
     {
         /*Opening the files and checking the process had been completed successfully:*/
         std::ifstream cardsFile(cards);
@@ -17,85 +68,44 @@ Mtmchkin::Mtmchkin(const std::string& cards, const std::string& playersReceived)
         }
 
         std::string word; //helps reading from the files word-by-word
-
-        /*Creating the card deck:*/
-        //auxillary variables to help with processing gangs:
-        int gangSize = 0;
-        int tempGangSize = 0;
-        bool isGang = false; 
-        Monster tempGang;
-        while (cardsFile >> word) //reading by turn each word until the end of the file
+        while (cardsFile >> word)
         {
-            if(gangSize>0) //reading all members of the gang
+            if (word!="Gang") //if the current word is not Gang or a card included in the gang
             {
                 if (word=="Dragon")
                 {
-                    Dragon dragon;
-                    tempGang+=dragon;
+                    unique_ptr<Card> dragon(new Dragon);
+                    deck.push(dragon);
                 }
                 else if (word=="Giant")
                 {
-                    Giant giant;
-                    tempGang+=giant;
+                    unique_ptr<Card> giant(new Giant);
+                    deck.push(giant);
                 }
                 else if (word=="Goblin")
                 {
-                    Goblin goblin;
-                    tempGang+=goblin;
-                }
-                else
-                {
-                    throw std::runtime_error("Invalid Cards File");
-                }
-                --gangSize;
-            }
-            if (gangSize==0 && tempGangSize!=0) //inserting the gang after processing all its members
-            {
-                deck.push(new Gang(tempGangSize,tempGang));
-                tempGang.reset();
-                tempGangSize=0;
-            }
-            if (isGang==true) //Reading the gang size
-            {
-                gangSize = std::stoi(word);
-                if (gangSize<0)
-                {
-                    throw std::runtime_error("Invalid Cards File");
-                }
-                tempGangSize = gangSize;
-                isGang=false;
-            }
-            if (word=="Gang") //identifying the current card as a Gang card
-            {
-                isGang=true;
-            }
+                    unique_ptr<Card> goblin(new Goblin);
 
-            if (gangSize==0 && tempGangSize==0 && word!="Gang") //if the current word is not Gang or a card included in the gang
-            {
-                if (word=="Dragon")
-                {
-                    deck.push(new Dragon());
-                }
-                else if (word=="Giant")
-                {
-                    deck.push(new Giant());
-                }
-                else if (word=="Goblin")
-                {
-                    deck.push(new Goblin());
+                    deck.push(goblin);
                 }
                 else if (word=="SolarEclipse")
                 {
-                    deck.push(new SolarEclipse());
+                    unique_ptr<Card> solarEclipse(new SolarEclipse);
+                    deck.push(solarEclipse);
                 }
                 else if (word=="PotionsMerchant")
                 {
-                    deck.push(new PotionsMerchant());
+                    unique_ptr<Card> potionsMerchant(new PotionsMerchant);
+                    deck.push(potionsMerchant);
                 }
                 else
                 {
                     throw std::runtime_error("Invalid Cards File");
                 }
+            }
+            else
+            {
+                handleGangs(cardsFile);
             }
         }
 
@@ -103,8 +113,6 @@ Mtmchkin::Mtmchkin(const std::string& cards, const std::string& playersReceived)
         int counter = 3;
         std::string name;
         std::string type;
-        Responsible responsible;
-        RiskTaking risk_taking;
         while(playersFile >> word)
         {
             if (counter==1) //reading the player's behavior and adding it to the players array
@@ -113,11 +121,11 @@ Mtmchkin::Mtmchkin(const std::string& cards, const std::string& playersReceived)
                 {
                     if (word=="Responsible")
                     {
-                       players.push_back(Warrior(name,responsible));
+                       players.push_back(shared_ptr<Player>(new Warrior(name , m_responsible)));
                     }
                     else if (word=="RiskTaking")
                     {
-                         players.push_back(Warrior(name,risk_taking));
+                         players.push_back(shared_ptr<Player>(new Warrior(name , m_riskTaking)));
                     }
                     else
                     {
@@ -128,11 +136,11 @@ Mtmchkin::Mtmchkin(const std::string& cards, const std::string& playersReceived)
                 {
                      if (word=="Responsible")
                     {
-                         players.push_back(Sorcerer(name,responsible));
+                         players.push_back(shared_ptr<Player>(new Sorcerer(name , m_responsible)));
                     }
                     else if (word=="RiskTaking")
                     {
-                         players.push_back(Sorcerer(name,risk_taking));
+                         players.push_back(shared_ptr<Player>(new Sorcerer(name , m_riskTaking)));
                     }
                     else
                     {
@@ -171,134 +179,71 @@ Mtmchkin::Mtmchkin(const std::string& cards, const std::string& playersReceived)
 
 // Function to manage gameplay
 void Mtmchkin::play() {
-
   //Initial printings:
-
     void printStartMessage(); //announcement of game beginning
-
-    for(int j=0; j<players.size(); j++) //information on each player
-
+    for(long unsigned int j=0; j < players.size(); j++) //information on each player
     {
-
-        printStartPlayerEntry(j, players[j]);
-
+        printStartPlayerEntry(j, *players[j]);
     }
-
     printBarrier();
-
- 
 
     //Game stage:
 
- 
-
     bool GameOver=false;
-
         while(!GameOver)
-
     {
-
         printRoundStart(); // starting round announcement
-
-        for (int i = 0; i < players.size(); ++i)
-
+        for (long unsigned int i = 0; i < players.size(); ++i) 
         {
-
-            Card* currentCard = deck.front();
-
-            printTurnDetails(i,players[i],*currentCard);
-
-            currentCard->activate(players[i]); //Activating the card's effects, in accordance with its type and the player's definitions
-
+           std::unique_ptr<Card>& currentCard = deck.front(); 
+            printTurnDetails(i, *players[i], *currentCard);
+            currentCard->activate(*players[i]); //Activating the card's effects, in accordance with its type and the player's definitions
             deck.pop();
-
             deck.push(currentCard); //taking out the used card and pushing it to the end of the deck
-
             //checking the effects of the round:
-
             if(players[i].getHealthPoints()==0) //removing a player with no health points
-
             {
-
-                players.erase(players.begin()+i);
-
+                players.erase(players.begin()+i); 
             }
-
             if(players[i].getLevel()==10)
-
             {
-
                 //victory
-
                 printGameOver();
-
-                printWinner(players[i]);
-
+                printWinner(*players[i]);
                 GameOver=true;
-
-                i = players.size(); //stopping the for loop
-
+                break;
             }
-
             if (players.size()==0) //no players left
-
             {
-
                 //game over with no victors
-
                 printGameOver();
-
-                printNoWinner();
-
+                printNoWinners();
                 GameOver=true;
-
+                break;
             }
-
         }
-
         if(!GameOver)
-
         {
-
         printRoundEnd(); //ending round announcement
-
         printLeaderBoardMessage();
-
         std::vector<Player> sortedPlayers = players;
-
-        std::sort(players.begin(), players.end(), [](const Player& a, const Player& b) { //creating a copy of the players vector sorted by levels
-
-            return a.level > b.level;
-
-        });
-
-        for (int i=0; i<sortedPlayers.size()-1; i++) //making adjustments to account for players with equal levels and money
-
-        {
-
-            if(sortedPlayers[i].getLevel()==sortedPlayers[i+1].getLevel())
-
-            {
-
-                if (sortedPlayers[i].getCoins()>sortedPlayers[i+1].getCoins())
-
-                {
-
-                   
-
+        // Sort players by level, coins, and name (if necessary)
+            std::sort(sortedPlayers.begin(), sortedPlayers.end(), [](const Player& a, const Player& b) {
+                if (a.getLevel() != b.getLevel()) {
+                    return a.getLevel() > b.getLevel(); // Sort by level in descending order
+                } else if (a.getCoins() != b.getCoins()) {
+                    return a.getCoins() > b.getCoins(); // If levels are equal, sort by coins in descending order
+                } else {
+                    return a.getName() < b.getName(); // If levels and coins are equal, sort by name in lexicographical order
                 }
-
-            }
-
+            }); 
+        //printing the leaderboard:
+        for (long unsigned int i=0; i<sortedPlayers.size(); i++)
+        {
+            printLeaderBoardEntry(i, sortedPlayers[i]);
         }
-
-        printLeaderBoardEntry(); //Leaderboard
-
         printBarrier();
-
         }
-
- 
 
     }
 };

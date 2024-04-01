@@ -8,11 +8,6 @@
 #include <memory>
 #include <vector>
 
-/**
-* - FIND SOLUTION TO FREEING IN THE CARD DECK
-*
-*/
-
 
 /**
  * Custom exception class for file opening failures.
@@ -23,17 +18,30 @@ class FileOpeningFailed {};
  * Mtmchkin class represents the game engine
  */
 class Mtmchkin {
-private:
-    int m_turnIndex;
+    private:
+        static const Responsible m_responsible; ///////////////////CHANGED TO FIT CONVENTIONS + ADDED STATIC
+        static const RiskTaking m_riskTaking;
 
-public:
-    std::vector<Player> players;
-    std::queue<Card*> deck;
+    public:
+        std::vector<std::shared_ptr<Player>> players;
+        std::queue<std::unique_ptr<Card>> deck;
+        
+    /**
+     * Handles the creation of gangs and nested gangs from the input file.
+     * Recursively builds gangs and adds them to the deck.
+     * 
+     * @param cardsFile - input file stream containing the gang information
+     * 
+     * @throws std::runtime_error if the cards file is invalid or contains incorrect data
+     * 
+     * @return - void
+     */
+     void handleGangs(std::ifstream& cardsFile);
 
     /**
      * Constructor to initialize the Mtmchkin game.
-     * @param cards Path to the file containing card information.
-     * @param playersReceived Path to the file containing player information.
+     * @param cards Argument vector containing card information.
+     * @param playersReceived Argument vector to the file containing player information. ////////////CHANGED
      * @throw FileOpeningFailed if file opening fails or invalid data is encountered.
      */
     Mtmchkin(const std::string& cards, const std::string& playersReceived);
