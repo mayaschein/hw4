@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "Players/Player.h"
-#include "Cards/Card.h"
+#include "Player.h"
+#include "Card.h"
 
 /**
  * Prints the start message of the game

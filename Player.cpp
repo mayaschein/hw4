@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "utilities.h"
 using std::string;
 using std::unique_ptr;
 using std::shared_ptr;
@@ -215,25 +216,27 @@ void Sorcerer::applyEclipse(){
 void RiskTaking::buyPotions(Player& player) const{
     
     if(player.getHealthPoints() < 50){
-
         if(player.pay(5)){
             player.heal(10);
         }
+        printTurnOutcome(getPotionsPurchaseMessage(player,1));
     }
 }
 
 void Responsible::buyPotions(Player& player) const{
-    
+    int counter=0;
     while(player.getHealthPoints() < 100){
         
         if(player.pay(5)){
             player.heal(10);
+            counter++;
         }
         
         else {
             break;
         }
     }
+    printTurnOutcome(getPotionsPurchaseMessage(player,counter));
 }
 
 void Player::buyPotions(){

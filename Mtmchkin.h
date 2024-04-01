@@ -1,62 +1,47 @@
-
-#pragma once
-
+#ifndef MTMCHKIN_H
+#define MTMCHKIN_H
+#include "utilities.h" 
+#include <queue>
+#include <fstream>
 #include <string>
+#include <stdexcept>
 #include <memory>
 #include <vector>
-#include <queue>
 
-#include "Players/Player.h"
-#include "Cards/Card.h"
+/**
+* - FIND SOLUTION TO FREEING IN THE CARD DECK
+*
+*/
 
-using std::string;
-using std::shared_ptr;
-using std::vector;
-using std::queue;
 
-class Mtmchkin{
+/**
+ * Custom exception class for file opening failures.
+ */
+class FileOpeningFailed {};
+
+/**
+ * Mtmchkin class represents the game engine
+ */
+class Mtmchkin {
 private:
     int m_turnIndex;
 
-    /**
-     * Playes a single turn for a player
-     * 
-     * @param player - the player to play the turn for
-     * 
-     * @return - void
-    */
-    void playTurn(Player& player);
-
-    /**
-     * Plays a single round of the game
-     * 
-     * @return - void
-    */
-    void playRound();
-
-    /**
-     * Checks if the game is over
-     * 
-     * @return - true if the game is over, false otherwise
-    */
-    bool isGameOver() const;
-
 public:
-    /**
-     * Constructor of Mtmchkin class
-     * 
-     * @param deckPath - path to the deck file
-     * @param playersPath - path to the players file
-     * 
-     * @return - Mtmchkin object with the given deck and players
-     *
-    */
-    Mtmchkin(const string& deckPath, const string& playersPath);
+    std::vector<Player> players;
+    std::queue<Card*> deck;
 
     /**
-     * Plays the entire game
-     * 
-     * @return - void
-    */
+     * Constructor to initialize the Mtmchkin game.
+     * @param cards Path to the file containing card information.
+     * @param playersReceived Path to the file containing player information.
+     * @throw FileOpeningFailed if file opening fails or invalid data is encountered.
+     */
+    Mtmchkin(const std::string& cards, const std::string& playersReceived);
+
+    /**
+     * Function to manage the gameplay from start to end.
+     */
     void play();
 };
+
+#endif // MTMCHKIN_H
